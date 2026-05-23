@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 
 public class DatabaseUtil {
 
@@ -29,6 +30,30 @@ public class DatabaseUtil {
         }
 
         return connection;
+    }
+
+    public static boolean validateUser(String username, String password) {
+        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+
+        try (Connection conn = connectToSupabase()) {
+            if (conn != null) {
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                pstmt.setString(1, username);
+                pstmt.setString(2, password);
+                ResultSet rs = pstmt.executeQuery();
+
+                boolean isValid = rs.next();
+
+                rs.close();
+                pstmt.close();
+
+                return isValid;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     public static void testConnection() {
